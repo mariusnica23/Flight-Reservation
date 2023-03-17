@@ -1,0 +1,6 @@
+1556 Bucuresti Brasov 21/1/2022
+659 Iasi Sibiu 1/2/2022
+5899 Berlin Madrid 29/12/2021
+953 Viena Timisoara 31/12/2021
+5649 Istanbul Moscova 11/2/2022
+215 Bucuresti Amsterdam 4/1/2022

@@ -9,9 +9,26 @@
 using namespace std;
 
 
+int powmod(int base, int exp, int modulus) {
+    base %= modulus;
+    int result = 1;
+    while (exp > 0) {
+        if (exp & 1) result = (result * base) % modulus;
+        base = (base * base) % modulus;
+        exp >>= 1;
+    }
+    return result;
+}
+
 string RSA(string x)
 {
-    return x;
+    string result = "";
+    int e = 7; // public exponent
+    int n = 33; // modulus 
+    for(char& _char : x) {
+        result += powmod(_char, e, n);
+    }
+    return result;
 }
 
 class Data{
@@ -209,8 +226,8 @@ class Utilizator
     string user;
     string parola;
     public:
-        void cautareZbor(Zbor , vector<Zbor>);
-        void rezervareZbor(Zbor );
+        void cautareZbor(Zbor, vector<Zbor>);
+        void rezervareZbor(Zbor);
         void cautareZbor(){
         Zbor zbor;
         string x;
@@ -298,7 +315,7 @@ class Utilizator
         while(file){
             getline(file, x);
             if(x == zbor.numarZbor + " " + zbor.orasPlecare + " " + zbor.orasSosire + " " + ss1 + "/" + ss2 + "/" + ss3){
-               // cout<< a <<" a rezervat "<< numarBilete <<" bilete la zborul "<< zbor.numarZbor<<endl;
+                cout<<"Ati rezervat "<< numarBilete <<" bilete la zborul "<< zbor.numarZbor<<endl;
                 break;  
             }
             else if(file.eof()){
@@ -315,93 +332,152 @@ int main()
     string parola;
     string parola_repetata;
     Autentificare aut;
-    while(true)
-    {
-        cout<<"Utilizator sau operator?Alege 0 sau 1\n";
-        cin>>opt;
-        switch (opt)
-        {
-        case 0:
-           {
-                        
-            int opt_utiliz;
-            map<string, string> bd=CitireScriere::citire_bd("Baza_de_date.txt");
-            bool signedin=false;
-            while(signedin==false)
-               {   cout<<"Logare sau autentificare?Alege 0 sau 1\n";
-                    cin>>opt_utiliz;
-                   switch (opt_utiliz)
-                    {
-                        
-                        case 0:
-                            {
-                            cout<<"Introduceti mail-ul\n";
-                            cin>>mail;
-                            cout<<"Introduceti parola\n";
-                            cin>>parola;
-                            if (signedin==aut.login(mail, parola, bd))
+    Operator oper;
+    Utilizator util;
+    
+    while (true) {
+        cout << "Utilizator sau operator? Alege 0 sau 1\n";
+        cin >> opt;
+        
+        switch (opt) {
+            case 0: // Utilizator
+            {
+                int opt_utiliz;
+                map<string, string> bd = CitireScriere::citire_bd("Baza_de_date.txt");
+                bool signedin = false;
+                
+                while (!signedin) {
+                    cout << "Logare sau autentificare? Alege 0 sau 1\n";
+                    cin >> opt_utiliz;
+                    
+                    switch (opt_utiliz) {
+                        case 0: // Logare
+                        {
+                            cout << "Introduceti mail-ul\n";
+                            cin >> mail;
+                            cout << "Introduceti parola\n";
+                            cin >> parola;
                             
-                                cout<<"Login nereusit! Incercati din nou!\n";
-                            else
-                                signedin=aut.login(mail, parola, bd);
+                            if (aut.login(mail, parola, bd)) {
+                                cout << "Login reusit! Bine ati venit!\n";
+                                signedin = true;
+                            } else {
+                                cout << "Login nereusit! Incercati din nou!\n";
+                            }
                             break;
+                        }
+                        case 1: // Autentificare
+                        {
+                            cout << "Introduceti mail-ul\n";
+                            cin >> mail;
+                            cout << "Introduceti parola\n";
+                            cin >> parola;
+                            cout << "Introduceti din nou parola\n";
+                            cin >> parola_repetata;
+                            
+                            if (aut.signIn(mail, parola, parola_repetata, bd)) {
+                                signedin = true;
                             }
-                        case 1:
-                            {
-                                cout<<"Introduceti mail-ul\n";
-                                cin>>mail;
-                                cout<<"Introduceti parola\n";
-                                cin>>parola;
-                                cout<<"Introduceti din nou parola\n";
-                                cin>>parola_repetata;
-                                signedin=aut.signIn(mail, parola, parola_repetata, bd);
-                                break;
-                            }
+                            break;
+                        }
                         default:
-                            cout<<"Alege o optiune valida\n";
-
+                            cout << "Alege o optiune valida\n";
                             break;
                     }
-               }
-            //Operatiuni zbor
-            break;
-           }
-        case 1:
-        {
-            int opt_operator;
-            map<string, string> bd=CitireScriere::citire_bd("Baza_de_date_operator.txt");
-            bool signedin=false;
-            while(signedin==false)
-            {
-                cout<<"Introduceti username-ul\n";
-                cin>>mail;
-                cout<<"Introduceti parola\n";
-                cin>>parola;
-                signedin=aut.login(mail, parola, bd);
-            }
-            switch (opt_operator)
-            {
-            case 0:
-                /* code */
+                }
+                
+                while (signedin) {
+                    cout << "Ce actiune doriti sa efectuati?\n";
+                    cout << "1. Cautare zbor\n";
+                    cout << "2. Rezervare zbor\n";
+                    cout << "3. Deconectare\n";
+                    
+                    int actiune;
+                    cin >> actiune;
+                    
+                    switch (actiune) {
+                        case 1: // Cautare zbor
+                        {
+                            util.cautareZbor();
+                            break;
+                        }
+                        case 2: // Rezervare zbor
+                        {
+                            util.rezervareBilete();
+                            break;
+                        }
+                        case 3: // Deconectare
+                        {
+                            signedin = false;
+                            break;
+                        }
+                        default:
+                            cout << "Comanda nu este recunoscuta.\n";
+                            break;
+                    }
+                }
+                
                 break;
+            }
+            
+            case 1: // Operator
+            {
+                int opt_operator;
+                map<string, string> bd = CitireScriere::citire_bd("Baza_de_date_operator.txt");
+                bool signedin = false;
+                
+                while (!signedin) {
+                    cout << "Introduceti username-ul\n";
+                    cin >> mail;
+                    cout << "Introduceti parola\n";
+                    cin >> parola;
+                    
+                    if (aut.login(mail, parola, bd)) {
+                        cout << "Login reusit! Bine ati venit, operator!\n";
+                        signedin = true;
+                    } else {
+                        cout << "Login nereusit! Incercati din nou!\n";
+                    }
+                }
+                
+                while (signedin) {
+                    cout << "Ce actiune doriti sa efectuati?\n";
+                    cout << "1. Adaugare zbor\n";
+                    cout << "2. Stergere zbor\n";
+                    cout << "3. Deconectare\n";
+                    
+                    cin >> opt_operator;
+                    
+                    switch (opt_operator) {
+                        case 1: // Adaugare zbor
+                        {
+                            oper.adaugareZbor();
+                            break;
+                        }
+                        case 2: // Stergere zbor
+                        {
+                            oper.StergereZbor();
+                            break;
+                        }
+                        case 3: // Deconectare
+                        {
+                            signedin = false;
+                            break;
+                        }
+                        default:
+                            cout << "Comanda nu este recunoscuta.\n";
+                            break;
+                    }
+                }
+                
+                break;
+            }
             
             default:
+                cout << "Alege o optiune valida.\n";
                 break;
-            }
-           break;
-        }
-        default:
-            cout<<"Alege o optiune valida\n";
-            break;
         }
     }
-//     map<string, string> bd=citire_bd("Baza_de_date.txt");
-//     map<string, string>::iterator it;
-//   for (it = bd.begin(); it != bd.end(); it++)
-//     {
-//          cout << it->first<<it->second << " ";
-//     }
-//     bd["abcd"]="1234";
-//     scriere_bd("Baza_de_date.txt", bd);
     
+    return 0;
 }
